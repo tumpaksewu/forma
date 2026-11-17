@@ -11,12 +11,14 @@ README.md explains the architecture; read it first.
     pi-durable harness, prompt, `app_check` and `memory` tools; `memory.ts` OptMem (pinned download, wake);
     `attachments.ts` dock uploads → saved files + model content (PDFs/images as is); `chat-view.ts` pure
     transcript → dock view.
-  - `dock/` the agent panel (plain JS in a shadow root), injected into every HTML page.
+  - `dock/` the agent panel (plain JS in a shadow root), injected into every HTML page; `viewport.js` its pure
+    layout helpers (keyboard-aware panel size, auto-growing composer).
 - `app/` — the seed of the malleable app (zero dependencies, no build). `app/AGENTS.md` is the in-app agent's guide
   and is rendered into its system prompt; keep it true when you change the seed.
 - `vendor/pi-claude-code/` — third-party, copied from mercury's vendored copy with one local patch (PDFs as
   document blocks), listed in `VENDORED.md`. Do not edit otherwise. `pnpm vendor:build` compiles it (runs on install).
-- `scripts/` — dev helpers (screenshots with local Chrome via playwright-core).
+- `scripts/` — dev helpers (screenshots with local Chrome, and iPhone WebKit shots with simulated safe areas and
+  keyboard, via playwright-core).
 - `.forma/` — runtime state (gitignored): live app, data, agent storage.
 
 ## Rules

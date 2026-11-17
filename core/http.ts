@@ -114,8 +114,9 @@ export class CoreServer {
 		const agent = this.#deps.agent();
 		switch (route) {
 			case "GET /dock.js":
+			case "GET /viewport.js":
 			case "GET /dock.css": {
-				const file = url.pathname.endsWith(".js") ? "dock.js" : "dock.css";
+				const file = url.pathname.slice(url.pathname.lastIndexOf("/") + 1);
 				res.writeHead(200, {
 					"content-type": file.endsWith(".js") ? "text/javascript" : "text/css",
 					"cache-control": "no-cache",

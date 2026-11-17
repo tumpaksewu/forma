@@ -1,6 +1,8 @@
 // forma dock: the agent panel added to every page of the app. It lives in the core, outside the app's source, so
 // no change the agent makes to the app can take it away. Plain JS in a shadow root, so the app's CSS cannot reach it.
 
+import { composerHeight, visibleArea } from "./viewport.js";
+
 const API = "/__forma";
 const STORE = "forma-dock";
 
@@ -203,7 +205,7 @@ function toolGroup(tools, key) {
 
 function renderChat() {
 	const { items, partial, busy, failure } = state.chat;
-	const near = chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 80;
+	const near = chatNearEnd();
 	let html = "";
 	if (!items.length && !partial && !busy) {
 		html += `<div class="empty"><h3>Shape forma your way</h3><p>Plan training, log sessions, or change how the app looks and works. Every change is saved as a version you can undo.</p>
@@ -232,8 +234,21 @@ function renderChat() {
 	if (failure && !busy) html += `<div class="notice error">Stopped: ${esc(failure)}</div>`;
 	if (state.agentError) html += `<div class="notice error">${esc(state.agentError)}</div>`;
 	chatEl.innerHTML = html;
-	if (near || busy) chatEl.scrollTop = chatEl.scrollHeight;
+	if (near || busy) scrollChatToEnd();
 }
+
+function chatNearEnd() {
+	return chatEl.scrollHeight - chatEl.scrollTop - chatEl.clientHeight < 80;
+}
+
+function scrollChatToEnd() {
+	chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+// Keep the thread's end in view when the thread gets shorter (keyboard up, composer growing) if it was there.
+let chatAtEnd = true;
+chatEl.addEventListener("scroll", () => (chatAtEnd = chatNearEnd()), { passive: true });
+new ResizeObserver(() => chatAtEnd && scrollChatToEnd()).observe(chatEl);
 
 function renderHistory() {
 	if (!state.history) {
@@ -350,7 +365,11 @@ function setOpen(open) {
 	state.open = open;
 	save();
 	render();
-	if (open && state.tab === "chat") setTimeout(() => textarea.focus({ preventScroll: true }), 50);
+	if (open && state.tab === "chat") {
+		autosize();
+		scrollChatToEnd();
+		setTimeout(() => textarea.focus({ preventScroll: true }), 50);
+	}
 }
 
 fab.addEventListener("click", () => setOpen(!state.open));
@@ -377,14 +396,47 @@ document.addEventListener("keydown", (e) => {
 	} else if (e.key === "Escape" && state.open) setOpen(false);
 });
 
+/** Grows the composer with its text (limits in dock.css). */
 function autosize() {
 	textarea.style.height = "auto";
-	textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`;
+	const css = getComputedStyle(textarea);
+	const borders = Number.parseFloat(css.borderTopWidth) + Number.parseFloat(css.borderBottomWidth);
+	const size = composerHeight(
+		textarea.scrollHeight,
+		borders,
+		Number.parseFloat(css.minHeight),
+		Number.parseFloat(css.maxHeight),
+	);
+	textarea.style.height = `${size.height}px`;
+	textarea.style.overflowY = size.scroll ? "auto" : "hidden";
 }
 textarea.addEventListener("input", () => {
 	autosize();
 	save();
 });
+// Typing: show the last message; the ResizeObserver above keeps it there as the keyboard and composer take room.
+textarea.addEventListener("focus", () => {
+	chatAtEnd = true;
+	scrollChatToEnd();
+});
+
+// ---------- on-screen keyboard: size the full-screen panel to the visual viewport ----------
+
+/**
+ * iOS does not shrink the layout viewport for the keyboard, so a 100dvh panel would sit partly under it and iOS
+ * would scroll the page to reveal the composer, pushing the thread off screen. dock.css sizes the mobile panel
+ * with these variables instead.
+ */
+function syncViewport() {
+	const viewport = window.visualViewport;
+	if (!viewport) return;
+	const area = visibleArea(viewport, document.documentElement.clientHeight);
+	host.style.setProperty("--vv-height", `${area.height}px`);
+	host.style.setProperty("--vv-top", `${area.top}px`);
+	panel.classList.toggle("keyboard", area.keyboard);
+}
+window.visualViewport?.addEventListener("resize", syncViewport);
+window.visualViewport?.addEventListener("scroll", syncViewport);
 textarea.addEventListener("keydown", (e) => {
 	if (e.key === "Enter" && !e.shiftKey && !e.isComposing && !("ontouchstart" in window)) {
 		e.preventDefault();
@@ -567,11 +619,10 @@ const saved = load();
 state.open = !!saved.open;
 state.tab = ["history", "memory"].includes(saved.tab) ? saved.tab : "chat";
 document.body.appendChild(host);
-if (saved.draft) {
-	textarea.value = saved.draft;
-	autosize();
-}
+syncViewport();
+if (saved.draft) textarea.value = saved.draft;
 render();
+autosize();
 if (state.open && state.tab === "history") openHistory();
 if (state.open && state.tab === "memory") openMemory();
 connect();

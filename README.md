@@ -73,6 +73,7 @@ phone ──HTTP──▶ core (:4300, stable)  ──proxy──▶ app (:4301,
 pnpm check   # biome + tsc
 pnpm test    # node:test
 node scripts/shot.ts .forma/shots '#/' '#/library'   # light/dark phone screenshots via local Chrome
+node scripts/ios-shot.ts /tmp/forma-ios-shots           # iPhone WebKit: tab bar, sheet, agent composer (needs `pnpm exec playwright-core install webkit`)
 ```
 
 See `AGENTS.md` for the layout, and `app/AGENTS.md` for the guide the in-app agent reads.
