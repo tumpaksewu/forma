@@ -1,0 +1,14 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.6.5/schema.json",
+	"files": { "includes": ["core/**", "app/**", "!app/web/vendor", "!app/web/icon.svg", "*.json"] },
+	"formatter": { "indentStyle": "tab", "lineWidth": 120 },
+	"linter": {
+		"rules": {
+			"preset": "recommended",
+			"style": { "noNonNullAssertion": "off", "noDescendingSpecificity": "off" },
+			"complexity": { "noImportantStyles": "off", "noCommaOperator": "off" },
+			"suspicious": { "noExplicitAny": "error", "noAssignInExpressions": "off" },
+			"correctness": { "noVoidTypeReturn": "off" }
+		}
+	}
+}

@@ -1,0 +1,9 @@
+{
+	"name": "forma",
+	"short_name": "forma",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#0f1115",
+	"theme_color": "#5b3df5",
+	"icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

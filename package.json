@@ -1,0 +1,31 @@
+{
+	"name": "forma",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"description": "A malleable workout planner whose built-in agent can reshape the whole app",
+	"engines": {
+		"node": ">=24"
+	},
+	"scripts": {
+		"prepare": "pnpm vendor:build",
+		"vendor:build": "tsc -p vendor/pi-claude-code/tsconfig.build.json && cp vendor/pi-claude-code/src/inert-mcp.mjs vendor/pi-claude-code/dist/",
+		"start": "node core/main.ts",
+		"check": "biome check . && tsc --noEmit",
+		"format": "biome check --write .",
+		"test": "node --test 'core/**/*.test.ts' 'app/**/*.test.ts'"
+	},
+	"dependencies": {
+		"@earendil-works/chord": "1.5.0",
+		"@earendil-works/pi-ai": "1.5.0",
+		"@earendil-works/pi-durable": "1.5.0",
+		"@earendil-works/pi-schema": "1.5.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.5",
+		"@types/node": "24.19.2",
+		"htm": "3.1.1",
+		"playwright-core": "1.64.1",
+		"typescript": "7.0.2"
+	}
+}

@@ -1,0 +1,6 @@
+{
+	"name": "forma-app",
+	"private": true,
+	"type": "module",
+	"description": "The malleable part of forma. Runs with `node server.ts`; no dependencies."
+}
