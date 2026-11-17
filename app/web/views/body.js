@@ -30,14 +30,16 @@ function Delta({ kind, now, before, units }) {
 }
 
 export function BodyView() {
-	const [list = [], { loading }] = useData(() => db.list("measurements").then(sortMeasurements), []);
+	const [loaded, { loading }] = useData(() => db.list("measurements").then(sortMeasurements), []);
+	const list = loaded ?? [];
 	const [prefs] = useData(loadPrefs, []);
 	const [selected, setSelected] = useState("weight_kg");
 	const [adding, setAdding] = useState(false);
 	const [open, setOpen] = useState(null);
 	const units = prefs?.units ?? "kg";
 
-	if (loading && !list.length) return html`<${Spinner} />`;
+	// Only before the first answer: an empty list (cached or fresh) renders the empty state at once.
+	if (loading && !loaded) return html`<${Spinner} />`;
 
 	const keys = metricKeys(list);
 	const tiles = [...HEADLINE.filter((k) => keys.includes(k))];

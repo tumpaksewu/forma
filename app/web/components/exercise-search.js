@@ -3,15 +3,22 @@ import { exercises, meta, useData } from "../lib/api.js";
 import { html, useEffect, useState } from "../lib/preact.js";
 import { ExerciseMedia, Icon, Spinner, title } from "./ui.js";
 
-export function ExerciseSearch({ onPick, picked = [], autofocus = false }) {
-	const [q, setQ] = useState("");
-	const [debounced, setDebounced] = useState("");
-	const [muscle, setMuscle] = useState("");
-	const [equipment, setEquipment] = useState("");
+/**
+ * `memory` (optional): an object the search reads its starting query and filters from and writes them back to, so a
+ * screen can come back to the same results (the Library keeps one for the session).
+ */
+export function ExerciseSearch({ onPick, picked = [], autofocus = false, memory = null }) {
+	const [q, setQ] = useState(memory?.q ?? "");
+	const [debounced, setDebounced] = useState(memory?.q ?? "");
+	const [muscle, setMuscle] = useState(memory?.muscle ?? "");
+	const [equipment, setEquipment] = useState(memory?.equipment ?? "");
 	useEffect(() => {
 		const t = setTimeout(() => setDebounced(q), 180);
 		return () => clearTimeout(t);
 	}, [q]);
+	useEffect(() => {
+		if (memory) Object.assign(memory, { q, muscle, equipment });
+	}, [q, muscle, equipment]);
 	const [info] = useData(meta, []);
 	const filters = {};
 	if (muscle) filters.muscle = muscle;

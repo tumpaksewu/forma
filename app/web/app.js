@@ -8,8 +8,12 @@
 //   #/body             body measurements: scans, weigh-ins, trends
 //   #/library          the exercise library
 //   #/exercise/:id     one exercise
+//
+// Change routes with navigate()/back() from lib/router.js or plain <a href="#/…"> links (the router opens them in
+// place). Never set location.hash: on Safari over http that reloads the whole page (see lib/router.js).
 import { Icon } from "./components/ui.js";
-import { html, render, useEffect, useState } from "./lib/preact.js";
+import { html, render, useEffect, useLayoutEffect, useState } from "./lib/preact.js";
+import { start, subscribe } from "./lib/router.js";
 import { AgendaView } from "./views/agenda.js";
 import { BodyView } from "./views/body.js";
 import { CalendarView } from "./views/calendar.js";
@@ -54,15 +58,20 @@ const NAV = [
 ];
 
 function App() {
-	const [route, setRoute] = useState(() => parseRoute(location.hash));
-	useEffect(() => {
-		const on = () => {
-			setRoute(parseRoute(location.hash));
-			window.scrollTo(0, 0);
-		};
-		window.addEventListener("hashchange", on);
-		return () => window.removeEventListener("hashchange", on);
-	}, []);
+	const [route, setRoute] = useState(() => ({ ...parseRoute(location.hash), scroll: null }));
+	useEffect(
+		() =>
+			subscribe(({ hash, restore, scroll }) => {
+				// A new screen starts at the top; back/forward returns to where that screen was left.
+				if (!restore) window.scrollTo(0, 0);
+				setRoute({ ...parseRoute(hash), scroll: restore ? scroll : null });
+			}),
+		[],
+	);
+	// After the restored screen rendered (from cached data), before it is painted.
+	useLayoutEffect(() => {
+		if (route.scroll !== null) window.scrollTo(0, route.scroll);
+	}, [route]);
 	useEffect(() => {
 		document.title = `${TITLES[route.name]} · forma`;
 	}, [route.name]);
@@ -88,4 +97,5 @@ function App() {
 	</div>`;
 }
 
+start();
 render(html`<${App} />`, document.getElementById("app"));

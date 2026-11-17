@@ -4,6 +4,7 @@ import { ExerciseMedia, Icon, Sheet, Spinner } from "../components/ui.js";
 import { changed, db, exercises as exerciseApi, loadPrefs, useData } from "../lib/api.js";
 import { relative } from "../lib/dates.js";
 import { html, useEffect, useState } from "../lib/preact.js";
+import { back, navigate } from "../lib/router.js";
 import { copyTo, entryFor, progress, volume } from "../lib/workouts.js";
 
 export function WorkoutView({ id }) {
@@ -35,7 +36,7 @@ export function WorkoutView({ id }) {
 
 	return html`<div class="workout-page">
 		<div class="page-head">
-			<a class="icon-btn" href=${`#/day/${w.date}`} aria-label="Back"><${Icon} name="back" /></a>
+			<button class="icon-btn" onClick=${() => back(`#/day/${w.date}`)} aria-label="Back"><${Icon} name="back" /></button>
 			<div class="grow">
 				<input class="title-input" value=${w.title} aria-label="Workout name" onChange=${(e) => save({ ...w, title: e.currentTarget.value })} />
 				<div class="muted small">${relative(w.date)}${total ? ` · ${done}/${total} sets` : ""}${volume(w) ? ` · ${Math.round(volume(w)).toLocaleString()} ${units} volume` : ""}</div>
@@ -159,7 +160,7 @@ function WorkoutMenu({ workout, onClose, onSave }) {
 					const created = await copyTo(workout, copyDate);
 					changed();
 					onClose();
-					location.hash = `#/workout/${created.id}`;
+					navigate(`#/workout/${created.id}`);
 				}}>Copy</button></div>
 			</label>
 			<label>Color
@@ -178,7 +179,7 @@ function WorkoutMenu({ workout, onClose, onSave }) {
 				if (!confirm("Delete this workout?")) return;
 				await db.remove("workouts", workout.id);
 				changed();
-				location.hash = `#/day/${workout.date}`;
+				navigate(`#/day/${workout.date}`, { replace: true });
 			}}><${Icon} name="trash" /> Delete workout</button>
 		</div>
 	</${Sheet}>`;

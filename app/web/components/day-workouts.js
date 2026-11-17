@@ -2,6 +2,7 @@
 import { changed, db, useData } from "../lib/api.js";
 import { relative } from "../lib/dates.js";
 import { html, useState } from "../lib/preact.js";
+import { navigate } from "../lib/router.js";
 import { copyTo, listForDay, newWorkout, progress } from "../lib/workouts.js";
 import { ExerciseMedia, Icon, Sheet } from "./ui.js";
 
@@ -47,7 +48,7 @@ export function DayWorkouts({ date }) {
 	const create = async (fields) => {
 		const w = await newWorkout(date, fields);
 		changed();
-		location.hash = `#/workout/${w.id}`;
+		navigate(`#/workout/${w.id}`);
 	};
 
 	return html`<div class="day-workouts">
@@ -77,7 +78,7 @@ function ReuseSheet({ date, onClose, onCreate }) {
 		const created = await copyTo(w, date);
 		changed();
 		onClose();
-		location.hash = `#/workout/${created.id}`;
+		navigate(`#/workout/${created.id}`);
 	};
 	return html`<${Sheet} title=${`Add to ${relative(date)}`} onClose=${onClose}>
 		<h4 class="section-label">Templates</h4>

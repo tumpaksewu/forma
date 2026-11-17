@@ -23,12 +23,17 @@ when you change the architecture, data model, or conventions, update this file i
   owner's custom exercises; photo cache; optional ExerciseDB GIFs (`EXERCISEDB_RAPIDAPI_KEY`).
 - `web/index.html`, `web/styles.css` — page shell and all styles. Colors are CSS variables on `:root`, redefined
   for dark mode under `prefers-color-scheme: dark`. Change the theme there.
-- `web/app.js` — hash router, shell, bottom tab bar (`NAV`). Add a screen: write `web/views/<name>.js`, add a
+- `web/app.js` — routes, shell, bottom tab bar (`NAV`). Add a screen: write `web/views/<name>.js`, add a
   route in `parseRoute`, render it in `App`, and optionally a `NAV` entry.
+- `web/lib/router.js` — in-app navigation: `navigate(hash, { replace })`, `back(fallback)`; opens `<a href="#/…">`
+  links in place and restores each screen's scroll on back. See Navigation below.
 - `web/lib/preact.js` — import `html`, `render`, hooks from here (Preact + htm, vendored in `web/vendor/`).
   Components use `html\`...\``tagged templates:`<${Comp} prop=${x} />`, `class=`not`className`.
 - `web/lib/api.js` — `db` (collections CRUD), `exercises`, `meta`, `useData(loader, deps)` (refetches on deps or on
-  the `forma:data-changed` event), `changed()` (fire that event after writing data).
+  the `forma:data-changed` event; `deps` must list every value the loader reads, because they also key a cache that
+  renders a screen's last data at once when it is opened again; any write clears it), `changed()` (fire that event
+  after writing data). Show a spinner only while there is no data yet (`data === undefined`), never because a list
+  is empty, or a revisited screen flashes it.
 - `web/lib/dates.js` — dates are local `"YYYY-MM-DD"` strings everywhere.
 - `web/lib/workouts.js` — the workout model (see below) and helpers.
 - `web/components/` — `ui.js` (Icon, Sheet, ExerciseMedia, Empty, Spinner, Chip), `exercise-search.js`,
@@ -73,6 +78,21 @@ Add new collections freely; no schema needed. When you change the shape of exist
 Planning workouts for the owner: look up real library ids with `/api/exercises?q=…` first, then POST workouts with
 `exerciseId`, `name` and `image` (the first of the exercise's `images`) copied from the library, and a fresh short
 `uid` per entry. One request per workout is fine; use a small shell loop or a node script for programs.
+
+## Navigation
+
+Routes live in the URL hash, but the app never _navigates_ to change them. The owner opens the app over plain http
+from a LAN address, and there Safari (the iPhone Home Screen app too) reloads the whole page in a new process after
+any navigation, even a same-document hash change: every screen change would render, go blank, and render again.
+`history.pushState` is not a navigation, so:
+
+- Change screens with `navigate("#/…")` from `web/lib/router.js`, or a plain `<a href="#/…">` (the router opens it in
+  place). Never assign `location.hash` or `location.href`, and never call `location.reload()`.
+- Changing what one screen shows (a calendar day, a month) uses `navigate(…, { replace: true })`.
+- A back button calls `back("#/parent-route")`: it goes back in history when the previous entry is an in-app screen
+  and otherwise opens the parent route (a Home Screen app has no browser back, and its history can be empty, e.g.
+  when opened from a link). Never `history.back()` directly. Back buttons are `icon-btn` (44×44) in the `page-head`.
+- Screens keep their state across visits where it helps (the Library keeps its search, filters and scroll).
 
 ## Conventions
 

@@ -3,6 +3,7 @@ import { ExerciseMedia, Icon, Spinner, title } from "../components/ui.js";
 import { changed, db, exercises, meta, useData } from "../lib/api.js";
 import { relative, today } from "../lib/dates.js";
 import { html, useState } from "../lib/preact.js";
+import { back, navigate } from "../lib/router.js";
 import { e1rm, entryFor, listForDay, newWorkout } from "../lib/workouts.js";
 
 /** A tiny line chart of numbers, oldest left. */
@@ -50,14 +51,14 @@ export function ExerciseView({ id }) {
 			? await db.put("workouts", { ...existing, exercises: [...existing.exercises, entry] })
 			: await newWorkout(day, { title: "Workout", exercises: [entry] });
 		changed();
-		location.hash = `#/workout/${w.id}`;
+		navigate(`#/workout/${w.id}`);
 	};
 
 	const best = sessions.map((s) => Math.max(...s.sets.map((set) => e1rm(set.weight, set.reps)))).filter(Boolean);
 
 	return html`<article class="exercise-page">
 		<div class="page-head">
-			<button class="icon-btn" onClick=${() => window.history.back()} aria-label="Back"><${Icon} name="back" /></button>
+			<button class="icon-btn" onClick=${() => back("#/library")} aria-label="Back"><${Icon} name="back" /></button>
 			<h1 class="grow">${x.name}</h1>
 		</div>
 		<${ExerciseMedia} images=${x.images} gif=${showGif} alt=${x.name} />

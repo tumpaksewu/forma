@@ -211,8 +211,9 @@ h4 {
 .icon-btn {
 	display: inline-grid;
 	place-items: center;
-	width: 40px;
-	height: 40px;
+	/* A tap target of at least 44px, like every control. */
+	width: 44px;
+	height: 44px;
 	border-radius: 12px;
 	border: 0;
 	background: transparent;

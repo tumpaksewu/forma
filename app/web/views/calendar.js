@@ -4,6 +4,7 @@ import { Icon } from "../components/ui.js";
 import { useData } from "../lib/api.js";
 import { addMonths, fmt, monthGrid, parse, relative, sameMonth, today, WEEKDAYS } from "../lib/dates.js";
 import { html } from "../lib/preact.js";
+import { navigate } from "../lib/router.js";
 import { listForRange } from "../lib/workouts.js";
 
 export function CalendarView({ date }) {
@@ -13,7 +14,8 @@ export function CalendarView({ date }) {
 	const byDay = {};
 	for (const w of workouts) (byDay[w.date] ||= []).push(w);
 	const go = (d) => {
-		location.hash = `#/day/${d}`;
+		// Picking a day or month changes this screen, not where "back" goes.
+		navigate(`#/day/${d}`, { replace: true });
 	};
 	const month = parse(selected);
 
