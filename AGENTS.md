@@ -18,7 +18,8 @@ README.md explains the architecture; read it first.
 - `vendor/pi-claude-code/` — third-party, copied from mercury's vendored copy with one local patch (PDFs as
   document blocks), listed in `VENDORED.md`. Do not edit otherwise. `pnpm vendor:build` compiles it (runs on install).
 - `scripts/` — dev helpers (screenshots with local Chrome, and iPhone WebKit shots with simulated safe areas and
-  keyboard, via playwright-core).
+  keyboard, via playwright-core). `ios-tabbar.ts` (`pnpm test:ios`) is the tab bar regression check; run it when
+  you touch the app's layout or the dock's FAB.
 - `.forma/` — runtime state (gitignored): live app, data, agent storage.
 
 ## Rules

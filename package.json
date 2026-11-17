@@ -13,6 +13,7 @@
 		"start": "node core/main.ts",
 		"check": "biome check . && tsc --noEmit",
 		"format": "biome check --write .",
+		"test:ios": "node scripts/ios-tabbar.ts",
 		"test": "node --test 'core/**/*.test.ts' 'app/**/*.test.ts'"
 	},
 	"dependencies": {

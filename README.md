@@ -74,6 +74,12 @@ pnpm check   # biome + tsc
 pnpm test    # node:test
 node scripts/shot.ts .forma/shots '#/' '#/library'   # light/dark phone screenshots via local Chrome
 node scripts/ios-shot.ts /tmp/forma-ios-shots           # iPhone WebKit: tab bar, sheet, agent composer (needs `pnpm exec playwright-core install webkit`)
+pnpm test:ios   # iPhone WebKit: asserts the tab bar and agent button are flush and identical on every tab, empty and seeded
 ```
+
+`pnpm test:ios` (`node scripts/ios-tabbar.ts [out-dir]`) starts the seed app on a spare port with a throwaway
+database and saves per-tab screenshots to `~/forma-ios-shots/r2`. `FORMA_APP=.forma/app` checks the live copy
+instead. Emulation has no Home Screen mode, so it checks the conditions the layout relies on (see `app/AGENTS.md`),
+not iOS itself.
 
 See `AGENTS.md` for the layout, and `app/AGENTS.md` for the guide the in-app agent reads.

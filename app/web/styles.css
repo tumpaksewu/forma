@@ -45,11 +45,16 @@
 html {
 	-webkit-text-size-adjust: 100%;
 	background: var(--bg);
+	/* The document must never be shorter than the screen. On iOS 26+ a Home Screen app (viewport-fit=cover,
+	   black-translucent) whose document is shorter than the screen gets a viewport short by about the status bar
+	   (WebKit bug 301108), and there 100%, vh and dvh all resolve to that short height. Fixed elements then end above
+	   the bottom edge (a band below the tab bar), and they jump when a screen's length crosses the screen height. So
+	   every screen, short or long, is at least screen-tall: 100lvh is the full screen there, and the min() keeps it
+	   at exactly the viewport where the viewport is already right (Safari, Android, desktop), so nothing scrolls. */
+	min-height: min(100lvh, calc(100% + var(--safe-top)));
 }
 body {
 	margin: 0;
-	/* iOS paints the area under a Home Screen app (below the home indicator) itself, in a colour sampled from
-	   the page background; keep it --bg, the same as the tab bar, so the bar appears to reach the screen edge. */
 	background: var(--bg);
 	color: var(--text);
 	font:
@@ -107,9 +112,6 @@ h4 {
 
 /* ---------- shell ---------- */
 
-.shell {
-	min-height: 100dvh;
-}
 .content {
 	max-width: 720px;
 	margin: 0 auto;
@@ -125,11 +127,10 @@ h4 {
 	justify-content: center;
 	gap: 8px;
 	height: calc(var(--tabbar) + var(--safe-bottom));
+	/* Fixed to the bottom edge with the home-indicator inset inside it, so its background reaches the screen edge.
+	   Pure CSS: nothing positions it from JS. Opaque, so content never shows through below the icons. */
 	padding-bottom: var(--safe-bottom);
-	/* Opaque and exactly the page background: on iOS the strip under the home indicator is painted by the system
-	   in that colour (from the body, or from a solid fixed bar at the edge), not by this element. A translucent or
-	   different colour here leaves a visible band below the bar. */
-	background: var(--bg);
+	background: var(--surface);
 	border-top: 1px solid var(--line);
 }
 .tabbar .tab {

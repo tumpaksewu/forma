@@ -365,6 +365,7 @@ function setOpen(open) {
 	state.open = open;
 	save();
 	render();
+	syncViewport();
 	if (open && state.tab === "chat") {
 		autosize();
 		scrollChatToEnd();
@@ -425,11 +426,12 @@ textarea.addEventListener("focus", () => {
 /**
  * iOS does not shrink the layout viewport for the keyboard, so a 100dvh panel would sit partly under it and iOS
  * would scroll the page to reveal the composer, pushing the thread off screen. dock.css sizes the mobile panel
- * with these variables instead.
+ * with these variables instead. Only the open panel uses them, so nothing runs while it is closed: the agent button
+ * and the app's tab bar are placed by CSS alone.
  */
 function syncViewport() {
 	const viewport = window.visualViewport;
-	if (!viewport) return;
+	if (!viewport || !state.open) return;
 	const area = visibleArea(viewport, document.documentElement.clientHeight);
 	host.style.setProperty("--vv-height", `${area.height}px`);
 	host.style.setProperty("--vv-top", `${area.top}px`);

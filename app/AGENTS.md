@@ -78,10 +78,13 @@ Planning workouts for the owner: look up real library ids with `/api/exercises?q
 
 - Mobile first: the owner uses this on a phone at the gym. Tap targets ≥ 44 px, inputs ≥ 16 px font (no iOS zoom),
   respect the safe-area insets through the `--safe-top` / `--safe-bottom` tokens in `styles.css` (not `env()`).
-- The owner runs it from the iPhone Home Screen. There iOS does not give the page the strip under the home
-  indicator: it paints it itself in a colour taken from the page background, and no element (and no JS offset) can
-  reach it. So the page background (`html`, `body`), the tab bar and anything else fixed to the bottom edge stay one
-  opaque colour, `--bg`; a translucent or different bar shows a band below it. Don't add `maximum-scale` or
+- The owner runs it from the iPhone Home Screen. There iOS gives a page whose document is shorter than the screen a
+  short viewport: `position: fixed; bottom: 0` then ends above the home indicator (a band under the tab bar), and
+  fixed elements jump when you switch between short and long screens. `html` in `styles.css` therefore has
+  `min-height: min(100lvh, calc(100% + var(--safe-top)))`, so every screen is at least screen-tall. Keep that rule,
+  don't size the page with `100vh`/`100dvh`/`100%` instead (they are the short height there), and don't position
+  the tab bar or anything fixed from JS. Things fixed to the bottom edge use `bottom: 0` with
+  `padding-bottom: var(--safe-bottom)` inside them, so their background reaches the edge. Don't add `maximum-scale` or
   `user-scalable=no` to the viewport.
 - Keep files under ~400 lines; split components into `web/components/`.
 - Don't break existing data. Don't delete the owner's workouts unless asked.
