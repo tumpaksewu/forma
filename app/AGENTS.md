@@ -106,5 +106,12 @@ any navigation, even a same-document hash change: every screen change would rend
   the tab bar or anything fixed from JS. Things fixed to the bottom edge use `bottom: 0` with
   `padding-bottom: var(--safe-bottom)` inside them, so their background reaches the edge. Don't add `maximum-scale` or
   `user-scalable=no` to the viewport.
+- Layout: nothing may be wider than the screen, or the whole app pans sideways on iPhone. A grid or flex child that
+  holds text must be able to shrink: grid columns are `minmax(0, 1fr)` (a bare `1fr` or an implicit column can't go
+  below its content, so one long exercise name pushes a card past the edge), and flex children with text get
+  `min-width: 0` (plus `overflow: hidden; text-overflow: ellipsis; white-space: nowrap` for one-line names). Never
+  use `100vw` (it includes the scrollbar and ignores padding); use `100%`. A deliberate horizontal scroller gets its
+  own `overflow-x: auto` container. `body { overflow-x: clip }` in `styles.css` is only a guard: keep it on `body`
+  (on `html` it would break `body.sheet-open`'s scroll lock), and fix the element anyway.
 - Keep files under ~400 lines; split components into `web/components/`.
 - Don't break existing data. Don't delete the owner's workouts unless asked.

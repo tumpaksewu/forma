@@ -19,8 +19,9 @@ README.md explains the architecture; read it first.
   document blocks), listed in `VENDORED.md`. Do not edit otherwise. `pnpm vendor:build` compiles it (runs on install).
 - `scripts/` — dev helpers (screenshots with local Chrome, and iPhone WebKit shots with simulated safe areas and
   keyboard, via playwright-core). `pnpm test:ios` runs `ios-tabbar.ts` (tab bar and FAB flush and still) and
-  `ios-nav.ts` (a tab switch is one in-place render with no reload or blank frame; back buttons work), sharing
-  `ios-harness.ts`; run it when you touch the app's layout, navigation, or the dock's FAB. `FORMA_URL=<core url>
+  `ios-nav.ts` (a tab switch is one in-place render with no reload or blank frame; back buttons work) and
+  `ios-overflow.ts` (nothing wider than the screen at 375/393/402 with long names, with the guard off and on),
+  sharing `ios-harness.ts`; run it when you touch the app's layout, navigation, or the dock's FAB. `FORMA_URL=<core url>
   node scripts/ios-nav.ts` checks a running core (proxy, dock, event stream) instead of the bare seed app.
 - `.forma/` — runtime state (gitignored): live app, data, agent storage.
 

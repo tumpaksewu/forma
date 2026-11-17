@@ -129,10 +129,109 @@ export async function seed(base: string, { images = false } = {}) {
 	);
 }
 
-/** An emulated iPhone 15/16/17 Pro-sized page. */
-export async function iPhone(browser: Browser, scheme: "dark" | "light" = "dark"): Promise<Page> {
+/** The library's longest names (Alex's Sunday card had the first six; the 7th is hidden behind "+ 1 more"). */
+export const LONG_NAMES = [
+	"Wide-Grip Lat Pulldown",
+	"Lying Close-Grip Barbell Triceps Extension Behind The Head",
+	"Incline Dumbbell Press",
+	"Standing Dumbbell Straight-Arm Front Delt Raise Above Head",
+	"Seated Cable Rows",
+	"Triceps Pushdown - Rope Attachment",
+	"Bent Over Dumbbell Rear Delt Raise With Head On Bench",
+];
+/** An owner-made exercise whose name has no break opportunity at all. */
+export const UNBREAKABLE = {
+	id: "custom-unbreakable",
+	name: "SingleArmCableKickbackWithRopeAttachmentAndPauseAtTheTopVariation",
+};
+
+/**
+ * Data with long names everywhere, for the overflow check: a current-week Sunday workout with 7 exercises like Alex's
+ * (thumbnails, '+ 1 more', progress bar), the same today with a long title and the unbreakable exercise, past logged
+ * sets (exercise history), and a body scan with long keys, notes and file name. Returns the ids to open.
+ */
+export async function seedLong(base: string): Promise<{ workout: string; exercise: string }> {
+	const post = async (collection: string, doc: unknown) =>
+		(await (
+			await fetch(`${base}/api/c/${collection}`, {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify(doc),
+			})
+		).json()) as { id: string };
+	type Item = { id: string; name: string; images: string[] };
+	const find = async (name: string) => {
+		const found = (await (await fetch(`${base}/api/exercises?q=${encodeURIComponent(name)}&limit=10`)).json()) as {
+			items: Item[];
+		};
+		return found.items.find((x) => x.name === name) ?? found.items[0] ?? { id: name, name, images: [] };
+	};
+	await post("exercises_custom", {
+		...UNBREAKABLE,
+		category: "strength",
+		equipment: "cable",
+		primaryMuscles: ["triceps"],
+		secondaryMuscles: ["shoulders"],
+		instructions: ["Pull the rope down: https://example.com/a-very-long-link-without-any-break-opportunity-at-all"],
+		images: [],
+	});
+	const library = [...(await Promise.all(LONG_NAMES.map(find))), { ...UNBREAKABLE, images: [] }];
+	const entry = (x: Item, i: number, done: boolean) => ({
+		uid: `long-${i}`,
+		exerciseId: x.id,
+		name: x.name,
+		image: x.images[0] ?? "",
+		notes: "",
+		restSec: 90,
+		sets: [1, 2, 3].map(() => ({ reps: 10, weight: 22.5, done })),
+	});
+	const sunday = day(6 - ((new Date().getDay() + 6) % 7));
+	const workout = await post("workouts", {
+		date: sunday,
+		title: "Gym A · Upper width",
+		notes: "",
+		done: false,
+		order: 9,
+		color: "#8b6dff",
+		exercises: library.slice(0, 7).map((x, i) => entry(x, i, false)),
+	});
+	await post("workouts", {
+		date: day(0),
+		title: "Upper-body-hypertrophy-block-week-three-heavy-day",
+		notes: "",
+		done: false,
+		order: 9,
+		exercises: [...library].reverse().map((x, i) => entry(x, i, i % 2 === 0)),
+	});
+	for (const offset of [-14, -10, -3])
+		await post("workouts", {
+			date: day(offset),
+			title: "Gym A · Upper width",
+			notes: "",
+			done: true,
+			order: 9,
+			exercises: library.map((x, i) => entry(x, i, true)),
+		});
+	await post("measurements", {
+		date: day(-1),
+		source: "visbody",
+		file: "/data/uploads/Visbody-Report-2026-11-17-FullBodyCompositionAndPostureAnalysis.pdf",
+		notes: "Scanned after training; https://example.com/very-long-link-to-the-original-report-without-breaks",
+		metrics: { weight_kg: 81.4, appendicular_skeletal_muscle_index_kg: 8.2, extracellular_water_ratio_pct: 38.9 },
+		circumferences_cm: { neck: 39, chest: 104, waist: 84, hip: 98, left_thigh: 58, right_thigh: 58.5 },
+		posture: [{ name: "Head-forward-tilt-relative-to-shoulders", value: 4, unit: "deg", finding: "slight" }],
+	});
+	return { workout: workout.id, exercise: library[1]!.id };
+}
+
+/** An emulated iPhone page, 15/16/17 Pro-sized unless given another viewport. */
+export async function iPhone(
+	browser: Browser,
+	scheme: "dark" | "light" = "dark",
+	viewport: { width: number; height: number } = VIEWPORT,
+): Promise<Page> {
 	const context = await browser.newContext({
-		viewport: VIEWPORT,
+		viewport,
 		deviceScaleFactor: 3,
 		isMobile: true,
 		hasTouch: true,

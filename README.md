@@ -74,12 +74,15 @@ pnpm check   # biome + tsc
 pnpm test    # node:test
 node scripts/shot.ts .forma/shots '#/' '#/library'   # light/dark phone screenshots via local Chrome
 node scripts/ios-shot.ts /tmp/forma-ios-shots           # iPhone WebKit: tab bar, sheet, agent composer (needs `pnpm exec playwright-core install webkit`)
-pnpm test:ios   # iPhone WebKit: tab bar and agent button flush and still on every tab; tab switches render in place; back works
+pnpm test:ios   # iPhone WebKit: tab bar and agent button flush and still on every tab; tab switches render in place; back works; nothing wider than the screen
 ```
 
-`pnpm test:ios` runs `scripts/ios-tabbar.ts` and `scripts/ios-nav.ts` (each takes `[out-dir]`). They start the seed
-app on a spare port with a throwaway database and save screenshots to `~/forma-ios-shots/r2` and
-`~/forma-ios-shots/r3/after`. `FORMA_URL=http://127.0.0.1:4300 node scripts/ios-nav.ts` checks a running forma
+`pnpm test:ios` runs `scripts/ios-tabbar.ts`, `scripts/ios-nav.ts` and `scripts/ios-overflow.ts` (each takes
+`[out-dir]`). They start the seed app on a spare port with a throwaway database and save screenshots to
+`~/forma-ios-shots/r2`, `~/forma-ios-shots/r3/after` and `~/forma-ios-shots/r4/after`. `ios-overflow.ts` seeds long
+exercise names, titles, notes and file names and checks every tab, a workout and two exercises at widths 375, 393 and
+402: no horizontal scroll width and no element past the screen edge, first with the `body { overflow-x: clip }` guard
+switched off (so it cannot hide a real overflow), then with it on. `FORMA_URL=http://127.0.0.1:4300 node scripts/ios-nav.ts` checks a running forma
 instead (it does not seed data). `FORMA_APP=.forma/app` checks the live copy
 instead. Emulation has no Home Screen mode, so it checks the conditions the layout relies on (see `app/AGENTS.md`),
 not iOS itself.

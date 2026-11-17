@@ -64,6 +64,13 @@ body {
 		system-ui,
 		sans-serif;
 	-webkit-tap-highlight-color: transparent;
+	/* A word longer than its box (a URL, a name without spaces) breaks instead of widening the box. */
+	overflow-wrap: anywhere;
+	/* The page never scrolls sideways (on iOS one too-wide element makes the whole app pan). Only a guard: fix the element
+	   too (see Layout in AGENTS.md). On body, not html: body's overflow goes to the viewport only while html's is visible,
+	   and body.sheet-open's scroll lock relies on that; there it clips the viewport and body itself stays an ordinary box,
+	   so position: sticky and the page's scrolling keep working. clip, not hidden, in case it ever applies to body itself. */
+	overflow-x: clip;
 }
 body.sheet-open {
 	overflow: hidden;
@@ -322,8 +329,11 @@ input[type="color"] {
 
 /* ---------- calendar ---------- */
 
+/* Grids and flex rows that hold text: columns are minmax(0, 1fr) and children min-width: 0, or a long name sets the
+   column's minimum width and pushes the card past the screen (a 1fr or auto track's minimum is its content's). */
 .calendar-page {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 20px;
 }
 @media (min-width: 900px) {
@@ -331,7 +341,7 @@ input[type="color"] {
 		max-width: 1080px;
 	}
 	.calendar-page {
-		grid-template-columns: 420px 1fr;
+		grid-template-columns: 420px minmax(0, 1fr);
 		align-items: start;
 	}
 	.calendar {
@@ -358,7 +368,7 @@ input[type="color"] {
 }
 .cal-grid {
 	display: grid;
-	grid-template-columns: repeat(7, 1fr);
+	grid-template-columns: repeat(7, minmax(0, 1fr));
 	gap: 2px;
 }
 .cal-dow {
@@ -433,6 +443,7 @@ input[type="color"] {
 }
 .day-workouts {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 12px;
 }
 .rest-day {
@@ -449,6 +460,7 @@ input[type="color"] {
 /* ---------- workout summary card ---------- */
 
 .workout-summary {
+	min-width: 0;
 	padding: 14px 16px;
 	border-left: 4px solid var(--wcolor, var(--accent));
 	transition: transform 0.1s;
@@ -466,6 +478,9 @@ input[type="color"] {
 	gap: 8px;
 	margin-bottom: 8px;
 }
+.ws-head > div {
+	min-width: 0;
+}
 .ws-head h3 {
 	font-size: 17px;
 }
@@ -474,6 +489,7 @@ input[type="color"] {
 	margin: 0;
 	padding: 0;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 6px;
 }
 .ws-list li {
@@ -557,6 +573,7 @@ input[type="color"] {
 	flex: 1;
 	min-width: 0;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 8px;
 }
 .rest-line {
@@ -775,7 +792,7 @@ input[type="color"] {
 }
 .filters {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	gap: 8px;
 	margin: 8px 0;
 }
@@ -788,6 +805,7 @@ input[type="color"] {
 	margin: 0;
 	padding: 0;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 6px;
 }
 .ex-row {
@@ -966,6 +984,7 @@ input[type="color"] {
 	margin: 0;
 	padding: 0;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 6px;
 }
 .pick-list button {
@@ -980,6 +999,7 @@ input[type="color"] {
 }
 .form {
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 14px;
 }
 .form label {
@@ -1188,6 +1208,7 @@ input[type="color"] {
 	margin: 0;
 	padding: 0;
 	display: grid;
+	grid-template-columns: minmax(0, 1fr);
 	gap: 8px;
 }
 .scan-row {
